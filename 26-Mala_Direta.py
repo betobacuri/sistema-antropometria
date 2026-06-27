@@ -1,15 +1,17 @@
 #<
 # /* ============================================================================= *\
-# Nome:             Sistema de Avaliação Antropométrica
-# Arquivo:          30-Mala_Direta.py
-# Descrição:        Efetua o cálculo do paciente em tempo real, otimizando o tempo no 
-#                   atendimento e trabalho
-# Versão:           3.0
-# Data:             23/06/2026
-# Observações:      Script em execução no GitHub, com a conta: betobacuri
-#                   Link de acesso: https://sistema-antropometria-ap.streamlit.app/
+# Nome:              Sistema de Avaliação Antropométrica
+# Arquivo:           30-Mala_Direta.py
+# Descrição:         Efetua o cálculo do paciente em tempo real, otimizando o tempo no 
+#                    atendimento e trabalho
+# Versão:            3.2
+# Data:              27/06/2026
+# Observações:       Script em execução no GitHub, com a conta: betobacuri
+#                    Link de acesso: https://sistema-antropometria-ap.streamlit.app/
 #
-# Desenvolvido por: Beto Schmitt
+# Modificação:       Data: 27/06/2026
+#                    Correção do cálculo de IMC para compatibilidade com altura em cm
+# Desenvolvido por:  Beto Schmitt
 # /* ============================================================================= *\
 #>
 
@@ -82,8 +84,8 @@ st.markdown(
        ================================================================= */
     div[data-testid="stTextInput"] label p,
     div[data-testid="stNumberInput"] label p {
-        font-size: 24px !important; /* Aumentado de 20px para 24px */
-        font-weight: bold !important; /* Alterado de 500 para bold */
+        font-size: 24px !important; 
+        font-weight: bold !important; 
         color: #FFFFFF !important;
         line-height: 1.5 !important;
     }
@@ -172,7 +174,7 @@ with col1:
 with col2:
     f_peso_atual = st.number_input("Peso Atual Aferido", min_value=0.0, value=0.0, step=0.1, key=f"peso_atual_{kr}")
     f_peso_habitual = st.number_input("Peso Habitual", min_value=0.0, value=0.0, step=0.1, key=f"peso_hab_{kr}")
-    f_altura = st.number_input("Altura Referida em metros", min_value=0.0, max_value=2.5, value=0.0, step=0.01, key=f"altura_{kr}")
+    f_altura = st.number_input("Altura (cm)", min_value=0, max_value=250, value=0, step=1, key=f"altura_{kr}")
 
 # Coluna 3
 with col3:
@@ -200,7 +202,7 @@ st.write("---")
 
 # --- 3. BOTÃO: CALCULAR DIAGNÓSTICO ---
 if st.button("📊 Calcular Diagnóstico", type="secondary", key="btn_calcular"):
-    if nome_paciente == "" or f_altura == 0.0 or f_peso_atual == 0.0:
+    if nome_paciente == "" or f_altura == 0 or f_peso_atual == 0.0:
         st.error("⚠️ Por favor, preencha o Nome, Peso e Altura do paciente antes de calcular!")
     else:
         dados = {}
@@ -211,7 +213,8 @@ if st.button("📊 Calcular Diagnóstico", type="secondary", key="btn_calcular")
         peso_corrigido = peso_pos_amputacao - kg_desconto_edema - kg_desconto_ascite
         if peso_corrigido < 0: peso_corrigido = 0.0  
         
-        imc_real = peso_corrigido / (f_altura ** 2) if f_altura > 0 else 0.0
+        # CORREÇÃO: Altura convertida de cm para metros para cálculo correto do IMC
+        imc_real = peso_corrigido / ((f_altura / 100) ** 2) if f_altura > 0 else 0.0
         
         if f_status_amputado:  
             membros_texto = ", ".join(f_status_amputado)
@@ -228,9 +231,10 @@ if st.button("📊 Calcular Diagnóstico", type="secondary", key="btn_calcular")
         dados['F_AJ-(cm)'] = f"{f_aj:.1f}"
         dados['F_Peso_Atual-(aferido)'] = f"{peso_corrigido:.1f}"
         dados['F_Peso_Habitual-(referido)'] = f"{f_peso_habitual:.1f}"
-        dados['F_Altura-(referida)'] = f"{f_altura:.2f}"
+        # Convertendo para metros apenas na string de exibição se o laudo esperar em metros, ou mantendo original:
+        dados['F_Altura-(referida)'] = f"{(f_altura/100):.2f}"
         dados['F_IMC_Dados_Refer'] = f"{imc_real:.2f}"
-        dados['F_IMC_Est_Altura'] = f"{f_altura:.2f}"
+        dados['F_IMC_Est_Altura'] = f"{(f_altura/100):.2f}"
         dados['F_IMC_Est_Peso'] = f"{peso_corrigido:.1f}"
         dados['F_IMC_Est_IMC'] = f"{imc_real:.2f}"
         
