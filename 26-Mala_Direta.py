@@ -165,22 +165,40 @@ col1, col2, col3, col4 = st.columns(4)
 
 # Coluna 1
 with col1:
-    nome_paciente = st.text_input("Nome do Paciente", value="", key=f"nome_{kr}")
-    f_idade = st.number_input("Idade", min_value=0, max_value=120, value=0, key=f"idade_{kr}")
+    nome_paciente = st.text_input("Nome do Paciente", value="", key=f"nome_{kr}", placeholder="Digite o nome...")
+    
+    # Idade como texto para iniciar em branco
+    f_idade_txt = st.text_input("Idade", value="", key=f"idade_{kr}", placeholder="Ex: 35")
+    f_idade = int(f_idade_txt) if f_idade_txt.strip().isdigit() else 0
     f_genero = st.selectbox("Sexo", ["Selecione...", "Masculino", "Feminino"], key=f"genero_{kr}")
     f_etnia = st.selectbox("Raça/Etnia", ["Selecione...", "Negra", "Branca"], key=f"etnia_{kr}")
 
+# Função auxiliar para converter o texto em float aceitando ponto ou vírgula
+def converter_para_float(valor_txt):
+    if not valor_txt.strip():
+        return 0.0
+    try:
+        return float(valor_txt.replace(',', '.'))
+    except ValueError:
+        return 0.0
+
 # Coluna 2
 with col2:
-    f_peso_atual = st.number_input("Peso Atual Aferido", min_value=0.0, value=0.0, step=0.1, key=f"peso_atual_{kr}")
-    f_peso_habitual = st.number_input("Peso Habitual", min_value=0.0, value=0.0, step=0.1, key=f"peso_hab_{kr}")
-    f_altura = st.number_input("Altura (cm)", min_value=0, max_value=250, value=0, step=1, key=f"altura_{kr}")
+    f_peso_atual_txt = st.text_input("Peso Atual Aferido", value="", key=f"peso_atual_{kr}", placeholder="Ex: 75.5")
+    f_peso_atual = converter_para_float(f_peso_atual_txt)
+    f_peso_habitual_txt = st.text_input("Peso Habitual", value="", key=f"peso_hab_{kr}", placeholder="Ex: 80.0")
+    f_peso_habitual = converter_para_float(f_peso_habitual_txt)
+    f_altura_txt = st.text_input("Altura (cm)", value="", key=f"altura_{kr}", placeholder="Ex: 170")
+    f_altura = int(f_altura_txt) if f_altura_txt.strip().isdigit() else 0
 
 # Coluna 3
 with col3:
-    f_cb = st.number_input("Circunferência do Braço (cm)", min_value=0.0, value=0.0, step=0.1, key=f"cb_{kr}")
-    f_cp = st.number_input("Circunferência da Panturrilha (cm)", min_value=0.0, value=0.0, step=0.1, key=f"cp_{kr}")
-    f_aj = st.number_input("Altura do Joelho (cm)", min_value=0.0, value=0.0, step=0.1, key=f"aj_{kr}")
+    f_cb_txt = st.text_input("Circunferência do Braço (cm)", value="", key=f"cb_{kr}", placeholder="Ex: 32.5")
+    f_cb = converter_para_float(f_cb_txt)
+    f_cp_txt = st.text_input("Circunferência da Panturrilha (cm)", value="", key=f"cp_{kr}", placeholder="Ex: 34.0")
+    f_cp = converter_para_float(f_cp_txt)
+    f_aj_txt = st.text_input("Altura do Joelho (cm)", value="", key=f"aj_{kr}", placeholder="Ex: 52.0")
+    f_aj = converter_para_float(f_aj_txt)
 
 # Coluna 4
 with col4:
