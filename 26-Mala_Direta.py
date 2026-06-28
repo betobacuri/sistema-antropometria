@@ -4,13 +4,16 @@
 # Arquivo:           30-Mala_Direta.py
 # Descrição:         Efetua o cálculo do paciente em tempo real, otimizando o tempo no 
 #                    atendimento e trabalho
-# Versão:            3.2
+# Versão:            3.3
 # Data:              27/06/2026
 # Observações:       Script em execução no GitHub, com a conta: betobacuri
 #                    Link de acesso: https://sistema-antropometria-ap.streamlit.app/
 #
-# Modificação:       Data: 27/06/2026
+# Modificação:       Data: 26/06/2026
 #                    Correção do cálculo de IMC para compatibilidade com altura em cm
+#                    Data: 27/06/2026
+#                    Alteração da fórmula do CB
+#
 # Desenvolvido por:  Beto Schmitt
 # /* ============================================================================= *\
 #>
@@ -277,18 +280,44 @@ if st.button("📊 Calcular Diagnóstico", type="secondary", key="btn_calcular")
         if f_cp < 31.0: dados['F_Circ_Panturrilha'] = "Baixa massa muscular"
         else: dados['F_Circ_Panturrilha'] = "Massa muscular adequada"
 
-        p50_cb = 28.5 if f_genero == "Feminino" else 29.7
-        dados['F_Circ_Braco-P50'] = f"{p50_cb:.1f}"
-        if f_cb > 0:
-            adequacao_cb = (f_cb / p50_cb) * 100
-            dados['F_Circ_Braco-%CB'] = f"{adequacao_cb:.1f}%"
-            if adequacao_cb < 70.0: dados['F_Circ_Braco-Classificacao'] = "Desnutrição Grave"
-            elif adequacao_cb <= 90.0: dados['F_Circ_Braco-Classificacao'] = "Desnutrição Leve"
-            else: dados['F_Circ_Braco-Classificacao'] = "Eutrofia"
+        # --- CÁLCULO DINÂMICO DO P50 DA CB (IGUAL AO EXCEL DO HOSPITAL) ---
+        p50_cb = 0.0
+        
+        if f_genero == "Masculino":
+            if f_idade < 18.9: p50_cb = 29.7
+            elif f_idade < 24.9: p50_cb = 30.8
+            elif f_idade < 34.9: p50_cb = 31.9
+            elif f_idade < 44.9: p50_cb = 32.6
+            elif f_idade < 54.9: p50_cb = 32.2
+            elif f_idade < 64.9: p50_cb = 31.7
+            elif f_idade < 74.9: p50_cb = 30.7
+            else: p50_cb = None  # Equivale ao "Não se aplica" para >= 75 anos
+            
+        elif f_genero == "Feminino":
+            # Caso ela precise para mulheres no futuro, mantemos o padrão atual
+            p50_cb = 28.5 
         else:
-            dados['F_Circ_Braco-%CB'] = "—"
-            dados['F_Circ_Braco-Classificacao'] = "—"
+            p50_cb = None
 
+        # --- APLICAÇÃO DOS RESULTADOS NO LAUDO ---
+        if p50_cb is None or p50_cb == 0.0:
+            dados['F_Circ_Braco-P50'] = "Não se aplica"
+            dados['F_Circ_Braco-%CB'] = "Não se aplica"
+            dados['F_Circ_Braco-Classificacao'] = "Não se aplica"
+        else:
+            dados['F_Circ_Braco-P50'] = f"{p50_cb:.1f}"
+            if f_cb > 0:
+                # Faz exatamente a conta do Excel: (CB * 100) / P50
+                adequacao_cb = (f_cb * 100) / p50_cb
+                dados['F_Circ_Braco-%CB'] = f"{adequacao_cb:.1f}%"
+                
+                # Mantém a classificação automática baseada na adequação
+                if adequacao_cb < 70.0: dados['F_Circ_Braco-Classificacao'] = "Desnutrição Grave"
+                elif adequacao_cb <= 90.0: dados['F_Circ_Braco-Classificacao'] = "Desnutrição Leve"
+                else: dados['F_Circ_Braco-Classificacao'] = "Eutrofia"
+            else:
+                dados['F_Circ_Braco-%CB'] = "—"
+                dados['F_Circ_Braco-Classificacao'] = "—"
         dados['_peso_corrigido_interno'] = peso_corrigido
         st.session_state.dados_laudo = dados
         st.session_state.diagnostico_calculado = True
