@@ -223,7 +223,7 @@ st.write("---")
 
 # --- 3. BOTÃO: CALCULAR DIAGNÓSTICO ---
 if st.button("📊 Calcular Diagnóstico", type="secondary", key="btn_calcular"):
-    if nome_paciente == "" or f_altura == 0 or f_peso_atual == 0.0:
+    if not nome_paciente.strip() or f_altura == 0 or f_peso_atual == 0.0:
         st.error("⚠️ Por favor, preencha o Nome, Peso e Altura do paciente antes de calcular!")
     else:
         dados = {}
